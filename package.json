@@ -1,23 +1,30 @@
 {
   "name": "rust-solo",
-  "displayName": "rust-solo",
+  "displayName": "Rust Solo",
   "description": "An extension to help you code standalone Rust files based on the rust-analyzer extension.",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.109.0"
+    "vscode": "^1.80.0"
   },
   "categories": [
+    "Programming Languages",
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:rust"
+  ],
   "main": "./out/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "rust-solo.helloWorld",
-        "title": "Hello World"
+    "configuration": {
+      "title": "Rust Solo",
+      "properties": {
+        "rustSolo.maxCacheSize": {
+          "type": "number",
+          "default": 8,
+          "description": "Maximum number of files kept in the Rust Solo LRU cache."
+        }
       }
-    ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -28,13 +35,8 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.109.0",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "22.x",
-    "typescript-eslint": "^8.54.0",
-    "eslint": "^9.39.2",
-    "typescript": "^5.9.3",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
+    "@types/vscode": "^1.80.0",
+    "@types/node": "18.x",
+    "typescript": "^5.1.3"
   }
 }
