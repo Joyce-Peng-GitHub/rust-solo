@@ -11,6 +11,9 @@ const currentlyPrompting = new Set<string>();
 
 const CACHE_DIR_NAME = 'rust_solo_cache';
 const PROJECT_FILE_NAME = 'rust-project.json';
+const DEFAULT_MAX_CACHE_SIZE = 8;
+const DEFAULT_MAX_RELOAD_RETRIES = 16;
+const DEFAULT_RELOAD_RETRY_INTERVAL_MS = 500;
 
 export function activate(context: vscode.ExtensionContext) {
 	extensionContext = context;
@@ -237,7 +240,7 @@ function getSysrootSrc(): string | undefined {
 
 async function trimCache() {
 	const config = vscode.workspace.getConfiguration('rustSolo');
-	const maxSize = config.get<number>('maxCacheSize', 8);
+	const maxSize = config.get<number>('maxCacheSize', DEFAULT_MAX_CACHE_SIZE);
 	const openFiles = getOpenRustFiles();
 
 	while (lruCache.length > maxSize) {
@@ -259,7 +262,7 @@ async function updateStateAndCache() {
 	const workspacePath = wsFolders[0].uri.fsPath;
 	const cacheDir = path.join(workspacePath, '.vscode', CACHE_DIR_NAME);
 	const cacheFilePath = path.join(cacheDir, PROJECT_FILE_NAME);
-	const relativeCacheFile = `./.vscode/${CACHE_DIR_NAME}/${PROJECT_FILE_NAME}`;
+	const relativeCacheFile = `.vscode/${CACHE_DIR_NAME}/${PROJECT_FILE_NAME}`;
 
 	const raConfig = vscode.workspace.getConfiguration('rust-analyzer');
 	let linkedProjects = [...(raConfig.get<any[]>('linkedProjects') || [])];
@@ -275,7 +278,9 @@ async function updateStateAndCache() {
 			crates: lruCache.map(filePath => ({
 				root_module: filePath,
 				edition: "2021",
-				deps: []
+				deps: [],
+				is_workspace_member: true,
+				cfg: ["test", "debug_assertions"]
 			}))
 		};
 
@@ -308,11 +313,23 @@ async function updateStateAndCache() {
 			if (!raExtension.isActive) {
 				await raExtension.activate();
 			}
-			try {
-				await vscode.commands.executeCommand('rust-analyzer.reloadWorkspace');
-			} catch (e) {
-				// Fails silently if rust-analyzer is still booting up
-			}
+			
+			const config = vscode.workspace.getConfiguration('rustSolo');
+			const maxRetries = config.get<number>('reloadMaxRetries', DEFAULT_MAX_RELOAD_RETRIES);
+			const retryDelayMs = config.get<number>('reloadRetryDelayMs', DEFAULT_RELOAD_RETRY_INTERVAL_MS);
+
+			(async () => {
+				for (let i = 0; i < maxRetries; i++) {
+					const commands = await vscode.commands.getCommands(true);
+					if (commands.includes('rust-analyzer.reloadWorkspace')) {
+						try {
+							await vscode.commands.executeCommand('rust-analyzer.reloadWorkspace');
+						} catch (e) {}
+						break;
+					}
+					await new Promise(resolve => setTimeout(resolve, retryDelayMs));
+				}
+			})();
 		}
 	}
 }

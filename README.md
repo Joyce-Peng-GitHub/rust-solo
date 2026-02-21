@@ -26,6 +26,8 @@ By default, `rust-analyzer` complains about standalone `.rs` files that don't be
 You can customize the extension via `settings.json`:
 
 * `rustSolo.maxCacheSize`: The maximum number of standalone files kept in the cache. *(Default: 8)*. If you open more standalone files than this size, the least recently used ones will be dropped to maintain performance.
+* `rustSolo.reloadMaxRetries`: The maximum number of times to poll for rust-analyzer to become active on startup. *(Default: 16)*.
+* `rustSolo.reloadRetryDelayMs`: The delay in milliseconds between polls when waiting for rust-analyzer. *(Default: 500)*.
 
 ## Release Notes
 
