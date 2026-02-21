@@ -2,7 +2,7 @@
   "name": "rust-solo",
   "displayName": "Rust Solo",
   "description": "An extension to help you code standalone Rust files based on the rust-analyzer extension.",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "publisher": "joyce-peng",
   "repository": {
     "type": "git",
@@ -38,6 +38,16 @@
           "type": "number",
           "default": 8,
           "description": "Maximum number of files kept in the Rust Solo LRU cache."
+        },
+        "rustSolo.reloadMaxRetries": {
+          "type": "number",
+          "default": 20,
+          "description": "Maximum number of times to poll for rust-analyzer to become active on startup."
+        },
+        "rustSolo.reloadRetryDelayMs": {
+          "type": "number",
+          "default": 500,
+          "description": "Delay in milliseconds between polls when waiting for rust-analyzer."
         }
       }
     }
