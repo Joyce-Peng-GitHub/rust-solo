@@ -72,6 +72,48 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}));
 
+	context.subscriptions.push(vscode.commands.registerCommand('rustSolo.addFile', async () => {
+		const editor = vscode.window.activeTextEditor;
+		if (editor && editor.document.fileName.endsWith('.rs') && editor.document.uri.scheme === 'file') {
+			const filePath = editor.document.uri.fsPath;
+			if (!lruCache.includes(filePath)) {
+				lruCache.push(filePath);
+				if (ignoredFiles.includes(filePath)) {
+					ignoredFiles = ignoredFiles.filter(p => p !== filePath);
+					await context.workspaceState.update('rustSoloIgnored', ignoredFiles);
+				}
+				await trimCache();
+				await updateStateAndCache();
+				vscode.window.showInformationMessage(`Added ${path.basename(filePath)} to Rust Solo cache.`);
+			} else {
+				vscode.window.showInformationMessage(`${path.basename(filePath)} is already in the cache.`);
+			}
+		} else {
+			vscode.window.showErrorMessage('No active standalone Rust file to add.');
+		}
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('rustSolo.removeFile', async () => {
+		const editor = vscode.window.activeTextEditor;
+		if (editor && editor.document.fileName.endsWith('.rs') && editor.document.uri.scheme === 'file') {
+			const filePath = editor.document.uri.fsPath;
+			if (lruCache.includes(filePath)) {
+				lruCache = lruCache.filter(p => p !== filePath);
+				if (!ignoredFiles.includes(filePath)) {
+					ignoredFiles.push(filePath);
+					await context.workspaceState.update('rustSoloIgnored', ignoredFiles);
+				}
+				await trimCache();
+				await updateStateAndCache();
+				vscode.window.showInformationMessage(`Removed ${path.basename(filePath)} from Rust Solo cache.`);
+			} else {
+				vscode.window.showInformationMessage(`${path.basename(filePath)} is not in the cache.`);
+			}
+		} else {
+			vscode.window.showErrorMessage('No active standalone Rust file to remove.');
+		}
+	}));
+
 	trimCache().then(() => updateStateAndCache());
 
 	if (vscode.window.activeTextEditor) {
