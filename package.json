@@ -2,7 +2,7 @@
   "name": "rust-solo",
   "displayName": "Rust Solo",
   "description": "An extension to help you code standalone Rust files based on the rust-analyzer extension.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "publisher": "joyce-peng",
   "repository": {
     "type": "git",
@@ -21,6 +21,16 @@
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "rustSolo.addFile",
+        "title": "Rust Solo: Add current file to cache"
+      },
+      {
+        "command": "rustSolo.removeFile",
+        "title": "Rust Solo: Remove current file from cache"
+      }
+    ],
     "configuration": {
       "title": "Rust Solo",
       "properties": {
