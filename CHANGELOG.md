@@ -5,6 +5,13 @@ All notable changes to the "Rust Solo" extension will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-02-22
+
+### Added
+- **Manual Cache Management:** Added two new commands to the VS Code Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`):
+  - `Rust Solo: Add current file to cache`: Manually forces the current standalone Rust file into the cache (especially useful if you previously clicked "No" and ignored it).
+  - `Rust Solo: Remove current file from cache`: Immediately drops the file from the cache and adds it to the ignore list, preventing future prompts.
+
 ## [1.0.0] - 2026-02-22
 
 ### Added
