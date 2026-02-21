@@ -1,71 +1,40 @@
-# rust-solo README
+# Rust Solo
 
-This is the README for your extension "rust-solo". After writing up a brief description, we recommend including the following sections.
+An elegant Visual Studio Code extension to help you code standalone Rust files (`.rs`) without the friction of constantly creating full Cargo workspaces. Designed to work seamlessly alongside [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer).
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+If you ever wanted to just drop a single `.rs` file into a directory, open it in VS Code, and immediately get auto-completion, linting, and standard library definitions—this extension is for you.
 
-For example if there is an image subfolder under your extension project workspace:
+By default, `rust-analyzer` complains about standalone `.rs` files that don't belong to a `Cargo.toml` project. **Rust Solo** acts as a dynamic manager that automatically generates a lightweight `rust-project.json` in your `.vscode` folder on the fly.
 
-\!\[feature X\]\(images/feature-x.png\)
-
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+- **Zero Configuration:** Simply open or create a `.rs` file.
+- **Dynamic LRU Cache:** Maintains a Least-Recently Used (LRU) cache of your standalone Rust files.
+- **Smart Prompts:** Automatically asks if you'd like to add newly opened standalone `.rs` files to the workspace. If you say "No", it remembers your choice for that file.
+- **IntelliSense Ready:** Automatically locates your Rust `sysroot` (from `rustc`) to ensure the standard library definitions work right out of the box.
 
 ## Requirements
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+1. **rust-analyzer**: You must have the official `rust-analyzer` extension installed for IntelliSense.
+2. **Rust Toolchain**: You must have Rust installed (via `rustup` or `cargo`).
+3. **Rust Standard Library Source**: Ensure you've downloaded the rust source so that `rust-analyzer` can jump to standard library definitions.
+   Run: `rustup component add rust-src`
 
 ## Extension Settings
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+You can customize the extension via `settings.json`:
 
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
+* `rustSolo.maxCacheSize`: The maximum number of standalone files kept in the cache. *(Default: 8)*. If you open more standalone files than this size, the least recently used ones will be dropped to maintain performance.
 
 ## Release Notes
 
-Users appreciate release notes as you update your extension.
-
 ### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
+- Initial stable release of Rust Solo.
+- Dynamic `rust-project.json` generation logic.
+- Intelligent prompt system with persistent ignore lists to avoid prompt spam.
+- Integrated `sysroot` resolution fallback mechanism for Windows/Linux/macOS.
 
 ---
 
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+**Source Code:** [GitHub Repository](https://github.com/Joyce-Peng-GitHub/rust-solo)  
+**License:** GPL-3.0
