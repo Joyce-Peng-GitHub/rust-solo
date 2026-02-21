@@ -3,7 +3,7 @@
   "displayName": "Rust Solo",
   "description": "An extension to help you code standalone Rust files based on the rust-analyzer extension.",
   "version": "1.0.0",
-  "publisher": "joyce-peng-github",
+  "publisher": "joyce-peng",
   "repository": {
     "type": "git",
     "url": "https://github.com/Joyce-Peng-GitHub/rust-solo.git"
