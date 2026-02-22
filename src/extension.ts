@@ -108,6 +108,20 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}));
 
+	context.subscriptions.push(vscode.commands.registerCommand('rustSolo.clearCache', async () => {
+		const answer = await vscode.window.showWarningMessage(
+			'Are you sure you want to clear the entire Rust Solo LRU cache?',
+			{ modal: true },
+			'Yes', 'No'
+		);
+
+		if (answer === 'Yes') {
+			lruCache = [];
+			await updateStateAndSync();
+			vscode.window.showInformationMessage('Rust Solo cache has been completely cleared.');
+		}
+	}));
+
 	updateStateAndSync();
 
 	if (vscode.window.activeTextEditor) {
