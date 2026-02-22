@@ -29,6 +29,69 @@ You can customize the extension via `settings.json`:
 * `rustSolo.reloadMaxRetries`: The maximum number of times to poll for rust-analyzer to become active on startup. *(Default: 16)*.
 * `rustSolo.reloadRetryDelayMs`: The delay in milliseconds between polls when waiting for rust-analyzer. *(Default: 500)*.
 
+## Installation
+
+Since this project is a [Visual Studio Code](https://code.visualstudio.com/) extension, I presume that you have VS Code installed already.
+
+You can either download pre-packaged `.vsix` files from the [GitHub Releases page](https://github.com/Joyce-Peng-GitHub/rust-solo/releases) or package it yourself following the instructions in the `Development` section.
+
+#### Option 1: Install via VS Code UI
+
+1.  Open VS Code.
+2.  Go to the `Extensions` view (`Ctrl+Shift+X` / `Cmd+Shift+X`).
+3.  Click the `...` button (three dots menu) in the Extensions panel header.
+4.  Select `Install from VSIX...`.
+5.  Navigate to and select the `rust-solo-<version>.vsix` file you downloaded or generated.
+
+#### Option 2: Install via Command Line
+
+```bash
+# For VS Code
+code --install-extension rust-solo-<version>.vsix
+
+# For VS Code Insiders
+code-insiders --install-extension rust-solo-<version>.vsix
+```
+
+## Development
+
+### Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- **[Node.js](https://nodejs.org/)** (v18 or later)
+- **[Git](https://git-scm.com/)**
+- And, of course, **[Visual Studio Code](https://code.visualstudio.com/)**
+
+### Clone and Setup
+
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/Joyce-Peng-GitHub/rust-solo.git
+    cd rust-solo
+    ```
+
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+
+### Package the Extension
+
+To create a `.vsix` installation file:
+
+1.  Install the VS Code Extension Manager (`vsce`) globally:
+    ```bash
+    npm install -g @vscode/vsce
+    ```
+
+2.  Package the extension:
+    ```bash
+    vsce package
+    ```
+
+This will generate a file named `rust-solo-<version>.vsix` in the project root directory.
+
 ## Release Notes
 
 ### 1.1.2
