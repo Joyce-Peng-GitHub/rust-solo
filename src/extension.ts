@@ -1,19 +1,14 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as cp from 'child_process';
-import * as os from "os";
+import { syncRustProject } from './analyzer';
+
+const DEFAULT_MAX_CACHE_SIZE = 8;
 
 let lruCache: string[] = [];
 let ignoredFiles: string[] = [];
 let extensionContext: vscode.ExtensionContext;
 const currentlyPrompting = new Set<string>();
-
-const CACHE_DIR_NAME = 'rust_solo_cache';
-const PROJECT_FILE_NAME = 'rust-project.json';
-const DEFAULT_MAX_CACHE_SIZE = 8;
-const DEFAULT_MAX_RELOAD_RETRIES = 16;
-const DEFAULT_RELOAD_RETRY_INTERVAL_MS = 500;
 
 export function activate(context: vscode.ExtensionContext) {
 	extensionContext = context;
@@ -52,8 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}
 		if (changed) {
-			await trimCache();
-			await updateStateAndCache();
+			await updateStateAndSync();
 		}
 	}));
 
@@ -70,8 +64,7 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		}
 		if (changed) {
-			await trimCache();
-			await updateStateAndCache();
+			await updateStateAndSync();
 		}
 	}));
 
@@ -85,8 +78,7 @@ export function activate(context: vscode.ExtensionContext) {
 					ignoredFiles = ignoredFiles.filter(p => p !== filePath);
 					await context.workspaceState.update('rustSoloIgnored', ignoredFiles);
 				}
-				await trimCache();
-				await updateStateAndCache();
+				await updateStateAndSync();
 				vscode.window.showInformationMessage(`Added ${path.basename(filePath)} to Rust Solo cache.`);
 			} else {
 				vscode.window.showInformationMessage(`${path.basename(filePath)} is already in the cache.`);
@@ -106,8 +98,7 @@ export function activate(context: vscode.ExtensionContext) {
 					ignoredFiles.push(filePath);
 					await context.workspaceState.update('rustSoloIgnored', ignoredFiles);
 				}
-				await trimCache();
-				await updateStateAndCache();
+				await updateStateAndSync();
 				vscode.window.showInformationMessage(`Removed ${path.basename(filePath)} from Rust Solo cache.`);
 			} else {
 				vscode.window.showInformationMessage(`${path.basename(filePath)} is not in the cache.`);
@@ -117,7 +108,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}));
 
-	trimCache().then(() => updateStateAndCache());
+	updateStateAndSync();
 
 	if (vscode.window.activeTextEditor) {
 		handleDocumentOpen(vscode.window.activeTextEditor.document);
@@ -143,8 +134,7 @@ async function handleDocumentOpen(doc: vscode.TextDocument) {
 
 		lruCache = lruCache.filter(p => p !== filePath);
 		lruCache.push(filePath);
-		await trimCache();
-		await updateStateAndCache();
+		await updateStateAndSync();
 		return;
 	}
 
@@ -163,8 +153,7 @@ async function handleDocumentOpen(doc: vscode.TextDocument) {
 
 		if (answer === 'Yes') {
 			lruCache.push(filePath);
-			await trimCache();
-			await updateStateAndCache();
+			await updateStateAndSync();
 		} else if (answer === 'No') {
 			ignoredFiles.push(filePath);
 			await extensionContext.workspaceState.update('rustSoloIgnored', ignoredFiles);
@@ -176,72 +165,22 @@ async function handleDocumentOpen(doc: vscode.TextDocument) {
 
 async function handleDocumentClose(doc: vscode.TextDocument) {
 	if (doc.fileName.endsWith('.rs') && doc.uri.scheme === 'file') {
-		await trimCache();
-		await updateStateAndCache();
+		await updateStateAndSync();
 	}
 }
 
 async function handleConfigChange(e: vscode.ConfigurationChangeEvent) {
 	if (e.affectsConfiguration('rustSolo.maxCacheSize')) {
-		await trimCache();
-		await updateStateAndCache();
+		await updateStateAndSync();
 	}
 }
 
-function getOpenRustFiles(): string[] {
-	return vscode.workspace.textDocuments
-		.filter(d => d.fileName.endsWith('.rs') && d.uri.scheme === 'file')
-		.map(d => d.uri.fsPath);
-}
-
-let cachedSysrootSrc: string | undefined = undefined;
-let hasAttemptedSysroot = false;
-
-function getSysrootSrc(): string | undefined {
-	if (hasAttemptedSysroot) {
-		return cachedSysrootSrc;
-	}
-	hasAttemptedSysroot = true;
-
-	let sysroot = '';
-
-	try {
-		sysroot = cp.execSync('rustc --print sysroot', { encoding: 'utf8' }).trim();
-	} catch (e) {
-		try {
-			const cargoHome = process.env.CARGO_HOME || path.join(os.homedir(), '.cargo');
-
-			const isWindows = os.platform() === 'win32';
-			const executable = isWindows ? 'rustc.exe' : 'rustc';
-			const rustcPath = path.join(cargoHome, 'bin', executable);
-
-			sysroot = cp.execSync(`"${rustcPath}" --print sysroot`, { encoding: 'utf8' }).trim();
-		} catch (fallbackError) {
-			console.error("Rust Solo: Failed to find rust sysroot in PATH or default Cargo home.", fallbackError);
-			return undefined;
-		}
-	}
-
-	const sysrootSrc = path.join(sysroot, 'lib', 'rustlib', 'src', 'rust', 'library');
-	if (fs.existsSync(sysrootSrc)) {
-		cachedSysrootSrc = sysrootSrc;
-		return sysrootSrc;
-	}
-
-	const legacySysrootSrc = path.join(sysroot, 'lib', 'rustlib', 'src', 'rust', 'src');
-	if (fs.existsSync(legacySysrootSrc)) {
-		cachedSysrootSrc = legacySysrootSrc;
-		return legacySysrootSrc;
-	}
-
-	console.error(`Rust Solo: Found sysroot at ${sysroot}, but could not locate the 'src' directory inside it. Make sure you ran 'rustup component add rust-src'.`);
-	return undefined;
-}
-
-async function trimCache() {
+function trimCache() {
 	const config = vscode.workspace.getConfiguration('rustSolo');
 	const maxSize = config.get<number>('maxCacheSize', DEFAULT_MAX_CACHE_SIZE);
-	const openFiles = getOpenRustFiles();
+	const openFiles = vscode.workspace.textDocuments
+		.filter(d => d.fileName.endsWith('.rs') && d.uri.scheme === 'file')
+		.map(d => d.uri.fsPath);
 
 	while (lruCache.length > maxSize) {
 		const indexToRemove = lruCache.findIndex(cachedPath => !openFiles.includes(cachedPath));
@@ -253,85 +192,10 @@ async function trimCache() {
 	}
 }
 
-async function updateStateAndCache() {
+async function updateStateAndSync() {
+	trimCache();
 	await extensionContext.workspaceState.update('rustSoloCache', lruCache);
-
-	const wsFolders = vscode.workspace.workspaceFolders;
-	if (!wsFolders || wsFolders.length === 0) { return; }
-
-	const workspacePath = wsFolders[0].uri.fsPath;
-	const cacheDir = path.join(workspacePath, '.vscode', CACHE_DIR_NAME);
-	const cacheFilePath = path.join(cacheDir, PROJECT_FILE_NAME);
-	const relativeCacheFile = `.vscode/${CACHE_DIR_NAME}/${PROJECT_FILE_NAME}`;
-
-	const raConfig = vscode.workspace.getConfiguration('rust-analyzer');
-	let linkedProjects = [...(raConfig.get<any[]>('linkedProjects') || [])];
-	let shouldReloadRustAnalyzer = false;
-
-	if (lruCache.length > 0) {
-		if (!fs.existsSync(cacheDir)) {
-			fs.mkdirSync(cacheDir, { recursive: true });
-		}
-
-		const projectJson = {
-			sysroot_src: getSysrootSrc(),
-			crates: lruCache.map(filePath => ({
-				root_module: filePath,
-				edition: "2021",
-				deps: [],
-				is_workspace_member: true,
-				cfg: ["test", "debug_assertions"]
-			}))
-		};
-
-		fs.writeFileSync(cacheFilePath, JSON.stringify(projectJson, null, 2), 'utf8');
-		shouldReloadRustAnalyzer = true;
-
-		if (!linkedProjects.includes(relativeCacheFile)) {
-			linkedProjects.push(relativeCacheFile);
-			await raConfig.update('linkedProjects', linkedProjects, vscode.ConfigurationTarget.Workspace);
-		}
-	} else {
-		if (fs.existsSync(cacheFilePath)) {
-			fs.unlinkSync(cacheFilePath);
-			shouldReloadRustAnalyzer = true;
-		}
-		if (fs.existsSync(cacheDir)) {
-			try { fs.rmdirSync(cacheDir); } catch (e) { }
-		}
-
-		if (linkedProjects.includes(relativeCacheFile)) {
-			linkedProjects = linkedProjects.filter(p => p !== relativeCacheFile);
-			const newValue = linkedProjects.length > 0 ? linkedProjects : undefined;
-			await raConfig.update('linkedProjects', newValue, vscode.ConfigurationTarget.Workspace);
-		}
-	}
-
-	if (shouldReloadRustAnalyzer) {
-		const raExtension = vscode.extensions.getExtension('rust-lang.rust-analyzer');
-		if (raExtension) {
-			if (!raExtension.isActive) {
-				await raExtension.activate();
-			}
-			
-			const config = vscode.workspace.getConfiguration('rustSolo');
-			const maxRetries = config.get<number>('reloadMaxRetries', DEFAULT_MAX_RELOAD_RETRIES);
-			const retryDelayMs = config.get<number>('reloadRetryDelayMs', DEFAULT_RELOAD_RETRY_INTERVAL_MS);
-
-			(async () => {
-				for (let i = 0; i < maxRetries; i++) {
-					const commands = await vscode.commands.getCommands(true);
-					if (commands.includes('rust-analyzer.reloadWorkspace')) {
-						try {
-							await vscode.commands.executeCommand('rust-analyzer.reloadWorkspace');
-						} catch (e) {}
-						break;
-					}
-					await new Promise(resolve => setTimeout(resolve, retryDelayMs));
-				}
-			})();
-		}
-	}
+	await syncRustProject(lruCache);
 }
 
 export function deactivate() { }
