@@ -31,6 +31,11 @@ You can customize the extension via `settings.json`:
 
 ## Release Notes
 
+### 1.1.1
+- Resolved a critical bug preventing the static checker from parsing standard library traits out of the box.
+- Stabilized startup race conditions with `rust-analyzer` via asynchronous command polling.
+- Completely refactored the extension internals for better maintainability.
+
 ### 1.1.0
 - Added manual cache control commands (`Rust Solo: Add current file to cache` / `Rust Solo: Remove current file from cache`).
 

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - **Static Checker Failure (Critical):** Resolved a critical issue where the rust-analyzer static checker failed to analyze code until a standalone file was manually added to `linkedProjects`. This was caused by `rust-project.json` missing the `is_workspace_member: true` flag, which completely disabled implicit standard library (`std`, `core`, `alloc`) inclusion for cached files. 
 - **Startup Reload Race Condition:** Implemented an asynchronous retry loop for `rust-analyzer.reloadWorkspace` to guarantee the language server loads the generated `rust-project.json` reliably on VS Code startup. Users can configure this polling behavior through the newly added `rustSolo.reloadMaxRetries` and `rustSolo.reloadRetryDelayMs` settings.
+- **Codebase Refactor:** Split the monolithic `extension.ts` into multiple modules (`extension.ts`, `analyzer.ts`, `sysroot.ts`) and removed excessive comments, making the extension highly maintainable and clean.
 
 ## [1.1.0] - 2026-02-22
 
