@@ -31,6 +31,9 @@ You can customize the extension via `settings.json`:
 
 ## Release Notes
 
+### 1.1.2
+- Corrected an unexpected default value `20` of `rustSolo.reloadMaxRetries` (which is expected to be `16` by default) in the extension configuration.
+
 ### 1.1.1
 - Resolved a critical bug preventing the static checker from parsing standard library traits out of the box.
 - Stabilized startup race conditions with `rust-analyzer` via asynchronous command polling.

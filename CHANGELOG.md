@@ -5,6 +5,11 @@ All notable changes to the "Rust Solo" extension will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2026-02-22
+
+### Fixed
+- **Mismatched default value:** Updated an omitted default value of `reloadMaxRetries`. The `analyzer.ts` has the default value set as `16` but the value in configuration is set to `20`, caused by carelessly omitting the line `"default": 16,` in `package.json`.
+
 ## [1.1.1] - 2026-02-22
 
 ### Fixed
