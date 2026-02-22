@@ -41,7 +41,7 @@
         },
         "rustSolo.reloadMaxRetries": {
           "type": "number",
-          "default": 20,
+          "default": 16,
           "description": "Maximum number of times to poll for rust-analyzer to become active on startup."
         },
         "rustSolo.reloadRetryDelayMs": {
