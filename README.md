@@ -11,7 +11,7 @@ By default, `rust-analyzer` complains about standalone `.rs` files that don't be
 - **Zero Configuration:** Simply open or create a `.rs` file.
 - **Dynamic LRU Cache:** Maintains a Least-Recently Used (LRU) cache of your standalone Rust files.
 - **Smart Prompts:** Automatically asks if you'd like to add newly opened standalone `.rs` files to the workspace. If you say "No", it remembers your choice for that file.
-- **Manual Control:** Use the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) to run `Rust Solo: Add current file to cache` or `Rust Solo: Remove current file from cache` if you change your mind.
+- **Manual Control:** Use the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) to run `Rust Solo: Add current file to cache`, `Rust Solo: Remove current file from cache`, or `Rust Solo: Clear entire LRU cache` if you change your mind.
 - **IntelliSense Ready:** Automatically locates your Rust `sysroot` (from `rustc`) to ensure the standard library definitions work right out of the box.
 
 ## Requirements
@@ -93,6 +93,9 @@ To create a `.vsix` installation file:
 This will generate a file named `rust-solo-<version>.vsix` in the project root directory.
 
 ## Release Notes
+
+### 1.2.0
+- Added a new command `Rust Solo: Clear entire LRU cache` to instantly wipe the current cache and reset the workspace logic.
 
 ### 1.1.2
 - Corrected an unexpected default value `20` of `rustSolo.reloadMaxRetries` (which is expected to be `16` by default) in the extension configuration.

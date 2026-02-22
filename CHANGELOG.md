@@ -5,6 +5,11 @@ All notable changes to the "Rust Solo" extension will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-02-22
+
+### Added
+- **Clear Cache Command:** Introduced a new command `Rust Solo: Clear entire LRU cache` (`rustSolo.clearCache`) to easily reset and wipe all cached files in one click.
+
 ## [1.1.2] - 2026-02-22
 
 ### Fixed
