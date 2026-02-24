@@ -5,6 +5,24 @@ All notable changes to the "Rust Solo" extension will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-02-24
+
+### Added
+- **Standalone Execution Layer:** Introduced a fully integrated compilation and execution pipeline for standalone Rust files.
+- **CodeLens Buttons:** Injects `▶ Run (Solo)` and `⚙ Debug (Solo)` lenses directly above `fn main()` in `.rs` files.
+- **Command Palette Execution:** Added `Rust Solo: Run Standalone File` and `Rust Solo: Debug Standalone File` commands for manual execution.
+- **Automatic Compilation:** Compiles files via `rustc -g` into the OS temporary directory (hashing the absolute path to prevent collisions) without polluting the user's workspace with `.exe` or `.pdb` files.
+- **Native Build Errors:** Utilizes VS Code Tasks for compilation, allowing users to see build errors natively in the terminal.
+- **Native Debugging Support:** Dynamically generates `vscode.DebugConfiguration` payloads to seamlessly attach breakpoints and inspect variables using installed extensions (prioritizing `vadimcn.vscode-lldb`, falling back to Microsoft C/C++ extensions).
+- **Integrated Terminal Execution:** Routes standard run output (non-debug) directly into a dedicated, reusable VS Code integrated terminal for full `stdin` and `stdout` support.
+- **File Renaming Support:** Automatically updates the LRU cache and ignored files list when a standalone Rust file is renamed.
+- **Save Trigger:** Automatically evaluates standalone Rust files when they are saved, prompting to add them to the cache if they aren't already tracked or ignored.
+
+### Fixed
+- **Terminal Execution Bug:** Fixed an issue where the `▶ Run (Solo)` command would fail to execute the binary in PowerShell, echoing the path string instead of running it.
+- **Orphaned Breakpoints Cleanup:** The extension now automatically detects when a standalone Rust file is deleted and scrubs any lingering breakpoints tied to that file from VS Code's "Run and Debug" panel.
+- **CodeLens Overreach:** Fixed a bug where `▶ Run (Solo)` and `⚙ Debug (Solo)` buttons would indiscriminately appear in all Rust files. They now strictly only inject themselves into files explicitly tracked by the Rust Solo LRU cache.
+
 ## [1.2.0] - 2026-02-22
 
 ### Added

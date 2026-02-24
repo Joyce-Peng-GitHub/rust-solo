@@ -4,15 +4,16 @@ An elegant Visual Studio Code extension to help you code standalone Rust files (
 
 ## Features
 
-If you ever wanted to just drop a single `.rs` file into a directory, open it in VS Code, and immediately get auto-completion, linting, and standard library definitions—this extension is for you.
+If you ever wanted to just drop standalone `.rs` files into a directory, open them in VS Code, and immediately get auto-completion, linting, and standard library definitions --- this extension is for you.
 
 By default, `rust-analyzer` complains about standalone `.rs` files that don't belong to a `Cargo.toml` project. **Rust Solo** acts as a dynamic manager that automatically generates a lightweight `rust-project.json` in your `.vscode` folder on the fly.
 
 - **Zero Configuration:** Simply open or create a `.rs` file.
 - **Dynamic LRU Cache:** Maintains a Least-Recently Used (LRU) cache of your standalone Rust files.
 - **Smart Prompts:** Automatically asks if you'd like to add newly opened standalone `.rs` files to the workspace. If you say "No", it remembers your choice for that file.
-- **Manual Control:** Use the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) to run `Rust Solo: Add current file to cache`, `Rust Solo: Remove current file from cache`, or `Rust Solo: Clear entire LRU cache` if you change your mind.
+- **Manual Control:** If you change your mind, use the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) to run `Rust Solo: Add current file to cache`, `Rust Solo: Remove current file from cache`, or `Rust Solo: Clear entire LRU cache`. You can also manually trigger `Rust Solo: Run Standalone File` and `Rust Solo: Debug Standalone File`.
 - **IntelliSense Ready:** Automatically locates your Rust `sysroot` (from `rustc`) to ensure the standard library definitions work right out of the box.
+- **File Management:** Automatically handles file renames and deletions, keeping your cache and breakpoints clean and up-to-date.
 
 ## Requirements
 
@@ -93,6 +94,16 @@ To create a `.vsix` installation file:
 This will generate a file named `rust-solo-<version>.vsix` in the project root directory.
 
 ## Release Notes
+
+### 1.3.0
+- Added a full standalone execution layer. New `▶ Run (Solo) | ⚙ Debug (Solo)` CodeLens buttons appear above `fn main()` in `.rs` files, and new commands are available in the Command Palette.
+- Automatically compiles standalone files directly via `rustc -g` into the OS temporary directory without touching your source workspace.
+- Utilizes VS Code Tasks for compilation to display build errors natively.
+- Full breakpoint and variable inspection support dynamically integrating with `vadimcn.vscode-lldb` (CodeLLDB) or Microsoft C/C++ Extensions.
+- Automatically handles file renames to keep the cache and ignored files list in sync.
+- Evaluates standalone Rust files when they are saved, prompting to add them to the cache if they aren't already tracked or ignored.
+- Fixed an issue where the `▶ Run (Solo)` command would fail to execute in PowerShell terminals.
+- Automatically cleans up orphaned breakpoints in the VS Code debug panel when a standalone `.rs` file is deleted.
 
 ### 1.2.0
 - Added a new command `Rust Solo: Clear entire LRU cache` to instantly wipe the current cache and reset the workspace logic.
