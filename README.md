@@ -102,7 +102,6 @@ This will generate a file named `rust-solo-<version>.vsix` in the project root d
 - Full breakpoint and variable inspection support dynamically integrating with `vadimcn.vscode-lldb` (CodeLLDB) or Microsoft C/C++ Extensions.
 - Automatically handles file renames to keep the cache and ignored files list in sync.
 - Evaluates standalone Rust files when they are saved, prompting to add them to the cache if they aren't already tracked or ignored.
-- Fixed an issue where the `▶ Run (Solo)` command would fail to execute in PowerShell terminals.
 - Automatically cleans up orphaned breakpoints in the VS Code debug panel when a standalone `.rs` file is deleted.
 
 ### 1.2.0
