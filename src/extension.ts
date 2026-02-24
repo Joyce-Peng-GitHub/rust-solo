@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { syncRustProject } from './analyzer';
+import { RustMainCodeLensProvider, executeRustFile } from './runner';
 
 const DEFAULT_MAX_CACHE_SIZE = 8;
 
@@ -46,6 +47,19 @@ export function activate(context: vscode.ExtensionContext) {
 				await context.workspaceState.update('rustSoloIgnored', ignoredFiles);
 			}
 		}
+
+		// Remove breakpoints for deleted Rust files to keep the Run & Debug panel clean
+		const breakpointsToRemove = vscode.debug.breakpoints.filter(bp => {
+			if (bp instanceof vscode.SourceBreakpoint) {
+				return e.files.some(deletedFile => deletedFile.fsPath === bp.location.uri.fsPath);
+			}
+			return false;
+		});
+
+		if (breakpointsToRemove.length > 0) {
+			vscode.debug.removeBreakpoints(breakpointsToRemove);
+		}
+
 		if (changed) {
 			await updateStateAndSync();
 		}
@@ -121,6 +135,27 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showInformationMessage('Rust Solo cache has been completely cleared.');
 		}
 	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('rustSolo.runFile', async (uri?: vscode.Uri) => {
+		const targetUri = uri || vscode.window.activeTextEditor?.document.uri;
+		if (targetUri) {
+			await executeRustFile(targetUri, false);
+		}
+	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('rustSolo.debugFile', async (uri?: vscode.Uri) => {
+		const targetUri = uri || vscode.window.activeTextEditor?.document.uri;
+		if (targetUri) {
+			await executeRustFile(targetUri, true);
+		}
+	}));
+
+	context.subscriptions.push(
+		vscode.languages.registerCodeLensProvider(
+			{ language: 'rust', scheme: 'file' },
+			new RustMainCodeLensProvider((filePath) => lruCache.includes(filePath))
+		)
+	);
 
 	updateStateAndSync();
 
