@@ -18,11 +18,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **File Renaming Support:** Automatically updates the LRU cache and ignored files list when a standalone Rust file is renamed.
 - **Save Trigger:** Automatically evaluates standalone Rust files when they are saved, prompting to add them to the cache if they aren't already tracked or ignored.
 
-### Fixed
-- **Terminal Execution Bug:** Fixed an issue where the `▶ Run (Solo)` command would fail to execute the binary in PowerShell, echoing the path string instead of running it.
-- **Orphaned Breakpoints Cleanup:** The extension now automatically detects when a standalone Rust file is deleted and scrubs any lingering breakpoints tied to that file from VS Code's "Run and Debug" panel.
-- **CodeLens Overreach:** Fixed a bug where `▶ Run (Solo)` and `⚙ Debug (Solo)` buttons would indiscriminately appear in all Rust files. They now strictly only inject themselves into files explicitly tracked by the Rust Solo LRU cache.
-
 ## [1.2.0] - 2026-02-22
 
 ### Added
