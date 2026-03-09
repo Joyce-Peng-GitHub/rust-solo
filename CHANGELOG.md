@@ -5,6 +5,16 @@ All notable changes to the "Rust Solo" extension will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-03-09
+
+### Changed
+- Increased default `maxCacheSize` from 8 to 32
+  - The Cargo.toml approach has minimal overhead per file, allowing a larger cache
+  - Incremental compilation only recompiles changed files
+
+### Added
+- Comprehensive JSDoc documentation throughout codebase
+
 ## [2.0.0] - 2026-03-09
 
 ### Changed
@@ -29,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Technical Details
 The previous `rust-project.json` approach was affected by a [rust-analyzer bug](https://github.com/rust-lang/rust-analyzer/issues/14217) where rustc's JSON output lacks package IDs, causing diagnostics to fail. The Cargo.toml approach uses cargo's native JSON output which includes proper package IDs.
 
----
+## [1.3.0] - 2026-02-24
 
 ### Added
 - **Standalone Execution Layer:** Introduced a fully integrated compilation and execution pipeline for standalone Rust files.

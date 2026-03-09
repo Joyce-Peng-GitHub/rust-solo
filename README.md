@@ -41,7 +41,7 @@ A Visual Studio Code extension that enables full rust-analyzer support for stand
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `rustSolo.maxCacheSize` | 8 | Maximum standalone files in cache |
+| `rustSolo.maxCacheSize` | 32 | Maximum standalone files in cache |
 | `rustSolo.reloadMaxRetries` | 16 | Polling retries for rust-analyzer startup |
 | `rustSolo.reloadRetryDelayMs` | 500 | Delay between polls (ms) |
 

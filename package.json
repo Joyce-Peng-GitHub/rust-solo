@@ -2,7 +2,7 @@
   "name": "rust-solo",
   "displayName": "Rust Solo",
   "description": "An extension to help you code standalone Rust files based on the rust-analyzer extension.",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "publisher": "joyce-peng",
   "repository": {
     "type": "git",
@@ -40,7 +40,7 @@
       "properties": {
         "rustSolo.maxCacheSize": {
           "type": "number",
-          "default": 8,
+          "default": 32,
           "description": "Maximum number of files kept in the Rust Solo LRU cache."
         },
         "rustSolo.reloadMaxRetries": {

@@ -10,7 +10,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { syncRustProject } from './analyzer';
 
-const DEFAULT_MAX_CACHE_SIZE = 8;
+const DEFAULT_MAX_CACHE_SIZE = 32;
 
 /** LRU-ordered list of cached file paths */
 let lruCache: string[] = [];
