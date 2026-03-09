@@ -5,7 +5,31 @@ All notable changes to the "Rust Solo" extension will be documented in this file
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.0] - 2026-02-24
+## [2.0.0] - 2026-03-09
+
+### Changed
+- **BREAKING:** Migrated from `rust-project.json` to `Cargo.toml` for project configuration
+  - Enables full compiler diagnostics (cargo check) that were previously unavailable
+  - rust-analyzer now provides native Run/Debug CodeLens buttons
+  - Generated Cargo.toml is located at `.vscode/rust_solo_cache/Cargo.toml`
+
+### Removed
+- **BREAKING:** Removed custom Run/Debug (Solo) CodeLens buttons
+  - These are no longer needed - rust-analyzer provides native Run/Debug support
+- Removed `runner.ts` module (compile/run/debug logic)
+- Removed `sysroot.ts` module (no longer needed with Cargo.toml approach)
+- Removed `rustSolo.runFile` and `rustSolo.debugFile` commands
+
+### Fixed
+- Full compiler diagnostics now appear in the PROBLEMS panel
+  - Missing imports (e.g., `use std::io::Read`)
+  - Unused variables and `mut` keywords
+  - All cargo check warnings and errors
+
+### Technical Details
+The previous `rust-project.json` approach was affected by a [rust-analyzer bug](https://github.com/rust-lang/rust-analyzer/issues/14217) where rustc's JSON output lacks package IDs, causing diagnostics to fail. The Cargo.toml approach uses cargo's native JSON output which includes proper package IDs.
+
+---
 
 ### Added
 - **Standalone Execution Layer:** Introduced a fully integrated compilation and execution pipeline for standalone Rust files.

@@ -1,25 +1,44 @@
+/**
+ * Rust Solo - VS Code extension for standalone Rust file development
+ *
+ * This extension manages an LRU cache of standalone Rust files and integrates
+ * with rust-analyzer via dynamically generated Cargo.toml files.
+ */
+
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { syncRustProject } from './analyzer';
-import { RustMainCodeLensProvider, executeRustFile } from './runner';
 
 const DEFAULT_MAX_CACHE_SIZE = 8;
 
+/** LRU-ordered list of cached file paths */
 let lruCache: string[] = [];
+
+/** Files the user has explicitly declined to cache */
 let ignoredFiles: string[] = [];
+
+/** Extension context for workspace state persistence */
 let extensionContext: vscode.ExtensionContext;
+
+/** Prevents duplicate prompts for the same file */
 const currentlyPrompting = new Set<string>();
 
+/**
+ * Extension entry point. Registers commands and event handlers.
+ */
 export function activate(context: vscode.ExtensionContext) {
 	extensionContext = context;
 
+	// Restore persisted state
 	const storedCache = context.workspaceState.get<string[]>('rustSoloCache', []);
 	ignoredFiles = context.workspaceState.get<string[]>('rustSoloIgnored', []);
 
+	// Filter out files that no longer exist
 	lruCache = storedCache.filter(p => fs.existsSync(p));
 	ignoredFiles = ignoredFiles.filter(p => fs.existsSync(p));
 
+	// Register event handlers
 	context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(editor => {
 		if (editor) {
 			handleDocumentOpen(editor.document);
@@ -82,6 +101,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}));
 
+	// Register commands
 	context.subscriptions.push(vscode.commands.registerCommand('rustSolo.addFile', async () => {
 		const editor = vscode.window.activeTextEditor;
 		if (editor && editor.document.fileName.endsWith('.rs') && editor.document.uri.scheme === 'file') {
@@ -136,27 +156,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}));
 
-	context.subscriptions.push(vscode.commands.registerCommand('rustSolo.runFile', async (uri?: vscode.Uri) => {
-		const targetUri = uri || vscode.window.activeTextEditor?.document.uri;
-		if (targetUri) {
-			await executeRustFile(targetUri, false);
-		}
-	}));
-
-	context.subscriptions.push(vscode.commands.registerCommand('rustSolo.debugFile', async (uri?: vscode.Uri) => {
-		const targetUri = uri || vscode.window.activeTextEditor?.document.uri;
-		if (targetUri) {
-			await executeRustFile(targetUri, true);
-		}
-	}));
-
-	context.subscriptions.push(
-		vscode.languages.registerCodeLensProvider(
-			{ language: 'rust', scheme: 'file' },
-			new RustMainCodeLensProvider((filePath) => lruCache.includes(filePath))
-		)
-	);
-
+	// Initial sync and prompt
 	updateStateAndSync();
 
 	if (vscode.window.activeTextEditor) {
@@ -164,6 +164,9 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 }
 
+/**
+ * Handles opening a Rust file. Updates LRU position or prompts to add to cache.
+ */
 async function handleDocumentOpen(doc: vscode.TextDocument) {
 	if (!doc.fileName.endsWith('.rs') || doc.uri.scheme !== 'file') {
 		return;
@@ -176,6 +179,7 @@ async function handleDocumentOpen(doc: vscode.TextDocument) {
 
 	const filePath = doc.uri.fsPath;
 
+	// Already cached - move to end of LRU
 	if (lruCache.includes(filePath)) {
 		if (lruCache[lruCache.length - 1] === filePath) {
 			return;
@@ -187,6 +191,7 @@ async function handleDocumentOpen(doc: vscode.TextDocument) {
 		return;
 	}
 
+	// User previously declined - don't prompt again
 	if (ignoredFiles.includes(filePath) || currentlyPrompting.has(filePath)) {
 		return;
 	}
@@ -212,18 +217,30 @@ async function handleDocumentOpen(doc: vscode.TextDocument) {
 	}
 }
 
+/**
+ * Handles closing a Rust file. Triggers cache trim.
+ */
 async function handleDocumentClose(doc: vscode.TextDocument) {
 	if (doc.fileName.endsWith('.rs') && doc.uri.scheme === 'file') {
 		await updateStateAndSync();
 	}
 }
 
+/**
+ * Handles configuration changes.
+ */
 async function handleConfigChange(e: vscode.ConfigurationChangeEvent) {
 	if (e.affectsConfiguration('rustSolo.maxCacheSize')) {
 		await updateStateAndSync();
 	}
 }
 
+/**
+ * Trims the LRU cache to the configured maximum size.
+ *
+ * Removes least recently used entries that are not currently open,
+ * preserving open files even if they would otherwise be evicted.
+ */
 function trimCache() {
 	const config = vscode.workspace.getConfiguration('rustSolo');
 	const maxSize = config.get<number>('maxCacheSize', DEFAULT_MAX_CACHE_SIZE);
@@ -241,6 +258,9 @@ function trimCache() {
 	}
 }
 
+/**
+ * Persists cache state and synchronizes with rust-analyzer.
+ */
 async function updateStateAndSync() {
 	trimCache();
 	await extensionContext.workspaceState.update('rustSoloCache', lruCache);
